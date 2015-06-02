@@ -21,7 +21,7 @@ function filter(param, filePath) {
             if (fileName.indexOf(fileBaseName) >= 0) {
                 var regex = new RegExp("(.*?[^-]*)-([^-\\.]*)(\\.|-)?.*");
                 var desc = regex.exec(fileName);
-console.log(desc);
+
                 if (desc[2] === param) {
                     rst = path.join(dir, fileName);
                     break;

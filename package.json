@@ -6,8 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jruchaud/gulp-plateform-file.git"
+  },
+  "keywords": [
+    "override",
+    "plateform",
+    "file",
+    "filter"
+  ],
   "author": "jruchaud",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jruchaud/gulp-plateform-file/issues"
+  },
+  "homepage": "https://github.com/jruchaud/gulp-plateform-file#readme",
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-util": "^3.0.5"

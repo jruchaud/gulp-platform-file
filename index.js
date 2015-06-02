@@ -19,10 +19,10 @@ function filter(param, filePath) {
 
         for (var fileName of filesInDir) {
             if (fileName.indexOf(fileBaseName) >= 0) {
-                var regex = new RegExp("(.*?[^-]*)(-([^/]*))?(\\..*)$");
+                var regex = new RegExp("(.*?[^-]*)-([^-\\.]*)(\\.|-)?.*");
                 var desc = regex.exec(fileName);
-
-                if (desc[3] === param) {
+console.log(desc);
+                if (desc[2] === param) {
                     rst = path.join(dir, fileName);
                     break;
                 }

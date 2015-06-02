@@ -1,23 +1,45 @@
 "use strict";
 
 var through = require("through2");
+var path = require("path");
 var fs = require("fs");
 
 function filter(param, filePath) {
 
     var outFiles = {};
 
-    var find = function(path) {
+    var find = function(fPath) {
+        var rst = fPath;
+
         // test on param
-        return path;
+
+        var dir = path.dirname(fPath);
+        var fileBaseName = path.basename(fPath, path.extname(fPath));
+        var filesInDir = fs.readdirSync(dir);
+
+        for (var fileName of filesInDir) {
+            if (fileName.indexOf(fileBaseName) >= 0) {
+                var regex = new RegExp("(.*?[^-]*)(-([^/]*))?(\\..*)$");
+                var desc = regex.exec(fileName);
+
+                if (desc[3] === param) {
+                    rst = path.join(dir, fileName);
+                    break;
+                }
+            }
+        }
+
+        return rst;
     };
 
     return through.obj(function(file, encoding, cb) {
 
-        var path = find(filePath || file.path);
+        var specificPath = find(filePath || file.path);
 
-        fs.readFile(path, function(err, data) {
-            outFiles[path] = data;
+        console.log(specificPath);
+
+        fs.readFile(specificPath, function(err, data) {
+            outFiles[specificPath] = data;
             cb();
         });
 

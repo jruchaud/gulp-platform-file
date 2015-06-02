@@ -36,8 +36,6 @@ function filter(param, filePath) {
 
         var specificPath = find(filePath || file.path);
 
-        console.log(specificPath);
-
         fs.readFile(specificPath, function(err, data) {
             outFiles[specificPath] = data;
             cb();

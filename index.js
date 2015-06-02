@@ -22,7 +22,7 @@ function filter(param, filePath) {
                 var regex = new RegExp("(.*?[^-]*)-([^-\\.]*)(\\.|-)?.*");
                 var desc = regex.exec(fileName);
 
-                if (desc[2] === param) {
+                if (desc && desc[2] === param) {
                     rst = path.join(dir, fileName);
                     break;
                 }

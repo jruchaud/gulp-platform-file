@@ -4,14 +4,16 @@ var through = require("through2");
 var path = require("path");
 var fs = require("fs");
 var _ = require("lodash");
+var util = require('gulp-util');
 
-function filter(params, filePath) {
-
+function filter(filePath) {
+    var params = getConf();
     var outFiles = {};
 
     return through.obj(function(file, encoding, cb) {
 
         var specificPath = find(filePath || file.path, params);
+
         if (!specificPath) {
             cb();
             return;
@@ -83,5 +85,25 @@ var find = function(filePath, filterKeys) {
 var isFileDerivation = function(fileBaseName) {
     return fileBaseName.indexOf("-") >= 0;
 }
+
+var getConf = function() {
+    var rst;
+    var profilePath = util.env.profilePath;
+
+    if(!profilePath) {
+
+        console.error("You need to specify a profile path (ex.: gulp --profilePath test/profiles.json)");
+
+    } else {
+        var profiles = require(profilePath);
+        var targetProfile = profiles[util.env.profile];
+
+        targetProfile = targetProfile || profiles["DEFAULT"];
+
+        rst = Object.keys(targetProfile).map(function(k) { return targetProfile[k] });
+    }
+
+    return rst;
+};
 
 module.exports = filter;

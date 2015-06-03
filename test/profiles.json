@@ -1,0 +1,21 @@
+{
+    "PROD": {
+        "platform": "prod",
+        "vendor": "sony",
+        "device": "L75"
+    },
+
+    "TEST": {
+        "platform": "test",
+        "vendor": "sony",
+        "device": "L75"
+    },
+
+    "DEV": {
+        "flavor":"dev",
+        "vendor": "",
+        "device": ""
+    },
+
+    "DEFAULT": "DEV"
+}

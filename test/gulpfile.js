@@ -20,7 +20,7 @@ gulp.task("clean", function() {
 
 gulp.task("default", ["clean"], function() {
     gulp.src("files/*")
-        .pipe(filter(["sony", "prod"]))
+        .pipe(filter())
         .pipe(gulp.dest(paths.build));
 });
 
@@ -28,7 +28,7 @@ gulp.task("withBrowserify", ["clean"], function() {
     return browserify({
         entries: paths.entryPoint
     })
-    .transform(filter.bind(filter, ["test", "sony"]))
+    .transform(filter)
     .bundle()
     .pipe(source(paths.outputFile))
     .pipe(gulp.dest(paths.build));

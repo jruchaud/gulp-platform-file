@@ -23,10 +23,16 @@
   },
   "homepage": "https://github.com/jruchaud/gulp-plateform-file#readme",
   "devDependencies": {
+    "browserify": "^10.2.3",
+    "del": "^1.2.0",
     "gulp": "^3.9.0",
-    "gulp-util": "^3.0.5"
+    "gulp-util": "^3.0.5",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "through2": "^0.6.5"
+    "lodash": "^3.9.3",
+    "through2": "^0.6.5",
+    "vinyl-file": "^1.1.1"
   }
 }

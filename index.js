@@ -4,7 +4,6 @@ var through = require("through2");
 var path = require("path");
 var fs = require("fs");
 var _ = require("lodash");
-var vinylFile = require('vinyl-file');
 
 function filter(params, filePath) {
 
@@ -13,30 +12,29 @@ function filter(params, filePath) {
     return through.obj(function(file, encoding, cb) {
 
         var specificPath = find(filePath || file.path, params);
-
-//        if (specificPath) {
-//            outFiles[specificPath] = vinylFile.readSync(specificPath);
-//        }
-//
-//        cb()
-        console.log(specificPath)
-        if (specificPath) {
-            fs.readFile(specificPath, function(err, data) {
-
-                    outFiles[specificPath] = data;
-
-                cb();
-            });
-        } else {
+        if (!specificPath) {
             cb();
+            return;
         }
+
+        fs.readFile(specificPath, function(err, data) {
+
+            if (filePath) {
+                outFiles[specificPath] = data;
+
+            } else {
+                file.contents = data;
+                outFiles[specificPath] = file;
+            }
+
+            cb();
+        });
     }
     ,function(cb) {
         for (var fileName in outFiles) {
             if (outFiles.hasOwnProperty(fileName)) {
 
                 var file = outFiles[fileName];
-                file.path = fileName;
                 this.push(file);
             }
         }
@@ -59,19 +57,22 @@ var find = function(filePath, filterKeys) {
             return f.indexOf(fileBaseName) === 0;
         });
 
-        var highestCount = 0;
         for (var fileName of candidates) {
-            var tokens = fileName.split(/[.-]/)
+            var tokens = _.compact(fileName.split(/[.-]/));
 
             // Remove the first token wich corresponds to the fileBaseName
-            tokens.shift();
+            // and the last token which corresponds to the extension
+            tokens.shift();tokens.pop();
 
             // Check how many tokens match the params filter
-            var intersection = _.intersection(tokens, filterKeys);
+            var intersection = _.intersection(tokens, filterKeys),
+                intersectionCount = intersection.length;
 
-            if (intersection.length > highestCount) {
-                highestCount = intersection.length;
+            var tokensCount = tokens.length;
+
+            if (intersectionCount == tokensCount) {
                 rst = path.join(dir, fileName);
+                break;
             }
         }
     }

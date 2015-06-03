@@ -4,4 +4,10 @@
 
 var a = require("./other.js");
 
-console.log(a);
+class Test {
+    constructor() {
+        this.a = a;
+    }
+}
+
+modules.exports = Test;

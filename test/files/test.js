@@ -4,10 +4,5 @@
 
 var a = require("./other.js");
 
-class Test {
-    constructor() {
-        this.a = a;
-    }
-}
-
-modules.exports = Test;
+var test = 3 * a;
+module.exports = test;

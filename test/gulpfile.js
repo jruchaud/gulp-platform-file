@@ -2,7 +2,7 @@
 
 var gulp = require("gulp"),
     gutil = require("gulp-util"),
-    filter = require("../index.js"),
+    platformify = require("../index.js"),
     del = require("del");
 
 var browserify = require("browserify"),
@@ -20,7 +20,10 @@ gulp.task("clean", function() {
 
 gulp.task("default", ["clean"], function() {
     gulp.src("files/*")
-        .pipe(filter())
+        .pipe(platformify()
+              .filter(["prod", "dev", "test"])
+              .filter(["sony", "toshiba"])
+         )
         .pipe(gulp.dest(paths.build));
 });
 
@@ -28,7 +31,8 @@ gulp.task("withBrowserify", ["clean"], function() {
     return browserify({
         entries: paths.entryPoint
     })
-    .transform(filter)
+    .transform(platformify
+              .filter(["prod", "dev", "test"]))
     .bundle()
     .pipe(source(paths.outputFile))
     .pipe(gulp.dest(paths.build));

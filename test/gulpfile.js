@@ -22,7 +22,7 @@ gulp.task("default", ["clean"], function() {
     gulp.src("files/*")
         .pipe(platformify()
               .filter(["prod", "dev", "test"])
-              .filter(["sony", "toshiba"])
+              .filter(["android", "ios"])
          )
         .pipe(gulp.dest(paths.build));
 });

@@ -35,7 +35,6 @@ var getFilteredTokens = function(fileName, dimensions) {
  * @returns {Boolean} true if the file contains one more tokens defined within the dimensions
  */
 var isFileDerivation = function(fileBaseName, dimensions) {
-    console.log("---", fileBaseName);
     var t = getFilteredTokens(fileBaseName, dimensions);
     return !!t.length;
 };
@@ -111,7 +110,7 @@ var find = function(dir, fileBaseName, dimensions, filteringTokens) {
 };
 
 var getConf = function(dimensions) {
-    var envOptions = _.compact(_.flattenDeep(_.values(util.env)));
+    var envOptions = _.compact(_.keys(util.env));
     return _.intersection(envOptions, _.flattenDeep(dimensions));
 };
 
@@ -166,5 +165,5 @@ function platformify(filePath) {
     return transform;
 }
 
-platformify.filter = filter.bind(platformify)
+platformify.filter = filter.bind(platformify);
 module.exports = platformify;

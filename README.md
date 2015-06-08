@@ -1,5 +1,5 @@
 # gulp-platform-file
-Gulp task to select file for a platform.
+Gulp task to filter files according to a platform.
 
 Installation
 ============

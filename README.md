@@ -1,5 +1,5 @@
 # gulp-platform-file
-Gulp task that help you to filter the files of your project according to the evironment you're compiling for (platform, deplyment target, language, or whatever dimensions you can imagine).
+Gulp task that help you to filter the files of your project according to the evironment you're building for (platform, deplyment target, language, or whatever dimensions you can imagine).
 
 Installation
 ============

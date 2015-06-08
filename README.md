@@ -4,10 +4,10 @@ Gulp task to select file for a platform.
 Installation
 ============
 
-`npm install babel-platform-file`
+`npm install gulp-platform-file`
 
 ```js
-var  = require("babel-platform-file")
+var  = require("gulp-platform-file")
 ```
 
 How it works

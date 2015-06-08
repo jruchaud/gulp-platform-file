@@ -1,5 +1,5 @@
 # gulp-platform-file
-Gulp task that help you to filter the files of your project according to the evironment you're building for (platform, deplyment target, language, or whatever dimensions you can imagine).
+Gulp task that help you to filter the files of your project according to the evironment you're building for (platform, deployment target, language, or whatever dimensions you can imagine).
 
 Installation
 ============
@@ -7,7 +7,7 @@ Installation
 `npm install gulp-platform-file`
 
 ```js
-var  = require("gulp-platform-file")
+var platformify = require("gulp-platform-file")
 ```
 
 How it works
@@ -18,7 +18,7 @@ For example, you have :
  * test-ios.js
  * test-android.js
 
-You want to only keep "ios" or "android" files when you compile your application.
+You want to only keep "ios" or "android" files when you build your application.
 Just configure the filter with your dimension on "ios" and "android" in Gulp task.
 
 ```platformify().filter(["android", "ios"]);```

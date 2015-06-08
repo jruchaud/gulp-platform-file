@@ -1,5 +1,5 @@
 "use strict";
 
-// This is a sony platform dependant file for production purpose only
+// This is an android platform dependant file for production purpose only
 
 module.exports = 10;

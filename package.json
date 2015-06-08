@@ -1,5 +1,5 @@
 {
-  "name": "gulp-plateform-file",
+  "name": "gulp-platform-file",
   "version": "1.0.0",
   "description": "Gulp task to select file for a plateform",
   "main": "index.js",
@@ -12,7 +12,7 @@
   },
   "keywords": [
     "override",
-    "plateform",
+    "platform",
     "file",
     "filter"
   ],

@@ -1,13 +1,13 @@
-# gulp-plateform-file
-Gulp task to select file for a plateform.
+# gulp-platform-file
+Gulp task to select file for a platform.
 
 Installation
 ============
 
-`npm install babel-plateform-file`
+`npm install babel-platform-file`
 
 ```js
-var  = require("babel-plateform-file")
+var  = require("babel-platform-file")
 ```
 
 How it works
@@ -18,7 +18,7 @@ For example, you have :
  * test-ios.js
  * test-android.js
 
-You want keep only "ios" or "android" when you compile your application.
+You want to only keep "ios" or "android" files when you compile your application.
 Just configure the filter with your dimension on "ios" and "android" in Gulp task.
 
 ```platformify().filter(["android", "ios"]);```
@@ -29,7 +29,7 @@ Then call gulp:
 
 So you get only "test-ios.js".
 
-You can have many dimensions. In this case the order is important, the first dimension is the most important.
+You can have many dimensions. In this case the defining order is important, the first dimension has the most important weight.
 
 For example, you have :
  * test.js
@@ -51,7 +51,7 @@ You get:
 Gulp
 ====
 
-You can use babel-plateform-file to filter files during Gulp process.
+You can use gulp-platform-file to filter files during Gulp process.
 
 ```js
 gulp.task("default", function() {
@@ -67,7 +67,7 @@ gulp.task("default", function() {
 Browserify
 ==========
 
-You can use babel-plateform-file with Browserify.
+You can use gulp-platform-file with Browserify.
 
 ```js
 gulp.task("default", function() {

@@ -66,6 +66,19 @@ var isDerivatedFrom = function(fileName, fileBaseName, dimensions) {
 };
 
 /**
+ * Get the real name without tokens for a file name.
+ * @param {String}                     fileName   file name
+ * @param {Array of array of string}   dimensions tokens defining every dimension
+ */
+var getFileNameBaseFrom = function(fileName, dimensions) {
+    var allTokens = getTokens(fileName),
+        filteredTokens = getFilteredTokens(fileName, dimensions),
+        diff = _.difference(allTokens, filteredTokens);
+
+    return diff.join("-").replace(/-([^-]+)$/, ".$1"); // Replace the last "-" by "."
+};
+
+/**
  * Try to find the best matching candidate associated to a file in the same directory of that file
  * according to the given filtering tokens.
  * @param   {String} dir   Directory in which we should search for a derivated file
@@ -80,7 +93,7 @@ var find = function(dir, fileBaseName, dimensions, filteringTokens) {
     // Retrieve potential candidates within the dir
 
     var candidates = fs.readdirSync(dir).filter(function(item) {
-        return item.startsWith(fileBaseName.split(".")[0]); // remove extension
+        return getFileNameBaseFrom(item, dimensions) === fileBaseName;
     });
 
     var bestScore = 0;
@@ -129,20 +142,23 @@ function platformify(filePath) {
 
         var f = filePath || file.path,
             dir = path.dirname(f),
-            base = path.basename(f);
+            base = path.basename(f),
+            name = getFileNameBaseFrom(base, _dimensions),
+            key = path.join(dir, name);
 
-        if (!isFileDerivation(base, _dimensions)) { // only process root files (not the platform dependant ones)
-
-            var specificPath = find(dir, base, _dimensions, filteringTokens);
+        var specificPath = find(dir, name, _dimensions, filteringTokens);
+        if (!outFiles[key]) {
 
             fs.readFile(specificPath, function(err, data) {
+                if (data) {
+                    if (filePath) {
+                        outFiles[key] = data;
 
-                if (filePath) {
-                    outFiles[specificPath] = data;
-
-                } else {
-                    file.contents = data;
-                    outFiles[specificPath] = file;
+                    } else {
+                        file.path = key;
+                        file.contents = data;
+                        outFiles[key] = file;
+                    }
                 }
 
                 cb();

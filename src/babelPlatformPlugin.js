@@ -32,42 +32,45 @@ var findProjectDir = function(currentFile) {
  */
 var requireFilter = function(babel) {
     var t = babel.types;
-
     var projectRootDir;
 
     return new babel.Transformer("babel-platform", {
-        CallExpression(node, parent, scope) {
-            var rst = node;
+        ImportDeclaration(node, parent, scope, config) {
 
-            if (t.isIdentifier(node.callee, {name: "require"})) {
+            // Let's find the prject specific conf
 
-                // let's find the prject root
-                projectRootDir = projectRootDir || findProjectDir(scope.path.state.opts.sourceFileName);
+            var pluginConf = config.opts.extra["gulp-platform-file"] || {};
+            projectRootDir = projectRootDir || pluginConf.projectRootDir || findProjectDir(scope.path.state.opts.sourceFileName);
 
-                // let's retrieve the path from the require call
-                // and check if there really is such a file
+            // Let's retrieve the path from the require call
+            // and check if there really is such a file
 
-                var requiredPath = node.arguments[0].value;
-                var existingPaths = globule.find({srcBase: projectRootDir, src: path.join("**", requiredPath + "*")});
+            var requiredPath = node.source.value;
+            var existingPaths = globule.find({srcBase: projectRootDir, src: path.join("**", requiredPath + "*")});
 
-                if (!existingPaths.length) {
+            if (!existingPaths.length) {
 
-                    // No path could have been found in the project to resolve the given require statement
-                    // let's check if we can find a derived file instead
+                // No path could have been found in the project to resolve the given require statement
+                // let's check if we can find a derived file instead
 
-                    var basename = utils.getFileNameBaseFrom(path.basename(requiredPath, path.extname(requiredPath)), [["sony"]]);
-                    existingPaths = globule.find({srcBase: projectRootDir, src: "**/" + basename+"*"});
+                var baseName = path.basename(requiredPath, path.extname(requiredPath)),
+                    realBaseName = utils.getFileNameBaseFrom(baseName, pluginConf.dimensions);
 
-                    if (existingPaths.length) {
-                        var target = path.basename(existingPaths[0]);
+                existingPaths = globule.find({srcBase: projectRootDir, src: "**/" + realBaseName +"*"});
 
-                        // A specific path has been found ! Let's update the require call
-                        rst =  "require('"+ requiredPath.replace(path.basename(requiredPath), target) + "')";
-                    }
+                if (existingPaths.length) {
+                    var target = path.basename(existingPaths[0]);
+
+                    // A specific path has been found ! Let's update the require call
+                    node.source.value = node.source.value.replace(path.basename(requiredPath), target);
+
+                    console.log(">>> Subtituting import : ", node.source.raw, ">", node.source.value);
+                } else {
+                    console.log("non existing module import found :", node.source.value, " - no specific file could match either.")
                 }
             }
 
-            return rst;
+            return node;
         }
     });
 };

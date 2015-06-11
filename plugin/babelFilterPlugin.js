@@ -2,7 +2,7 @@
 
 var path = require("path");
 var globule = require("globule");
-var utils = require("./filterUtils");
+var utils = require("../src/filterUtils");
 
 /**
  * Find the root of the project on which we're executing this babel plugin

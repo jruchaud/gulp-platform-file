@@ -144,7 +144,7 @@ var find = function(dir, fileBaseName, dimensions, filteringTokens) {
     }
 
     if (bestScore) {
-        console.log("Substituting", fileBaseName,">>>",rst);
+        console.log(">>> Substituting", fileBaseName, "with", path.basename(rst));
     }
 
     return rst;

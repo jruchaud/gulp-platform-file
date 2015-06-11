@@ -30,7 +30,7 @@ var findProjectDir = function(currentFile) {
  * This function is filtering the require call in js files
  * trying to replace require to non existing file to a derived file (if one can be found)
  */
-var requireFilter = function(babel) {
+var ImportsFilter = function(babel) {
     var t = babel.types;
     var projectRootDir;
 
@@ -39,34 +39,49 @@ var requireFilter = function(babel) {
 
             // Let's find the prject specific conf
 
-            var pluginConf = config.opts.extra["gulp-platform-file"] || {};
+            var pluginConf = config.opts.extra["gulp-platform-file"] || {},
+                dimensions = pluginConf.dimensions || [],
+                filteringTokens =  utils.getConf(dimensions);
+
             projectRootDir = projectRootDir || pluginConf.projectRootDir || findProjectDir(scope.path.state.opts.sourceFileName);
 
             // Let's retrieve the path from the require call
             // and check if there really is such a file
 
-            var requiredPath = node.source.value;
-            var existingPaths = globule.find({srcBase: projectRootDir, src: path.join("**", requiredPath + "*")});
+            var relativeImportPath = node.source.value,
+                fileBaseName = path.basename(relativeImportPath);
 
-            if (!existingPaths.length) {
+            var absoluteMatchingPaths = globule.find({
+                srcBase: projectRootDir,
+                src: path.join("**", path.dirname(relativeImportPath), fileBaseName.split(".")[0] + "*")
+            });
 
-                // No path could have been found in the project to resolve the given require statement
-                // let's check if we can find a derived file instead
+            if (absoluteMatchingPaths.length) {
 
-                var baseName = path.basename(requiredPath, path.extname(requiredPath)),
-                    realBaseName = utils.getFileNameBaseFrom(baseName, pluginConf.dimensions);
+                // At least one existing path has been found,
+                // let's check the compile options and try to find the appropriate import
 
-                existingPaths = globule.find({srcBase: projectRootDir, src: "**/" + realBaseName +"*"});
+                var dir = path.dirname(absoluteMatchingPaths[0]),
+                    name = utils.getFileNameBaseFrom(fileBaseName, dimensions);
 
-                if (existingPaths.length) {
-                    var target = path.basename(existingPaths[0]);
+                var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), name, dimensions, filteringTokens));
+
+                if (matchingFile != fileBaseName) {
 
                     // A specific path has been found ! Let's update the require call
-                    node.source.value = node.source.value.replace(path.basename(requiredPath), target);
+                    node.source.value = relativeImportPath.replace(fileBaseName, matchingFile);
 
-                    console.log(">>> Subtituting import : ", node.source.raw, ">", node.source.value);
                 } else {
-                    console.log("non existing module import found :", node.source.value, " - no specific file could match either.")
+
+                    // Check that the current import does exist, otherwize display an error
+                    var isCurrentImportExist = absoluteMatchingPaths.filter(function(p) { return p.indexOf(matchingFile) >= 0 }).length;
+                    if (!isCurrentImportExist) {
+                        console.error(
+                            "Bad import found :",
+                            node.source.value,
+                            "There is no such file. No derived file could match either. Are you sure this import is correct ?"
+                        );
+                    }
                 }
             }
 
@@ -75,4 +90,4 @@ var requireFilter = function(babel) {
     });
 };
 
-module.exports = requireFilter;
+module.exports = ImportsFilter;

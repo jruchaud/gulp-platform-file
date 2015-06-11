@@ -1,0 +1,8 @@
+"use strict";
+
+// This is the test
+
+import a from "./other.js";
+
+var test = 3 * a;
+module.exports = test;

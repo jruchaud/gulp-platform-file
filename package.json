@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/jruchaud/gulp-plateform-file#readme",
   "devDependencies": {
+    "babelify": "^6.1.2",
     "browserify": "^10.2.3",
     "del": "^1.2.0",
     "gulp": "^3.9.0",

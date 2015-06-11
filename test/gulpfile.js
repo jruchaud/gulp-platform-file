@@ -8,8 +8,11 @@ var gulp = require("gulp"),
 var browserify = require("browserify"),
     source = require("vinyl-source-stream");
 
+var babelify = require("babelify");
+
 var paths = {
     entryPoint: "files/test.js",
+    entryPointEs6: "files/es6/test.js",
     outputFile: "all.js",
     build: "dist/"
 };
@@ -33,6 +36,27 @@ gulp.task("withBrowserify", ["clean"], function() {
     })
     .transform(platformify
               .filter(["prod", "dev", "test"]))
+    .bundle()
+    .pipe(source(paths.outputFile))
+    .pipe(gulp.dest(paths.build));
+});
+
+gulp.task("withBabel", ["clean"], function() {
+    return browserify({
+        entries: paths.entryPointEs6
+    })
+    .transform(babelify.configure({
+        compact: false,
+        extra: {
+            "gulp-platform-file": {
+                dimensions: [
+                    ["test", "dev", "prod"],
+                    ["sony", "android"]
+                ]
+            }
+        },
+        plugins: ["../plugin/babelFilterPlugin"]
+    }))
     .bundle()
     .pipe(source(paths.outputFile))
     .pipe(gulp.dest(paths.build));

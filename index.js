@@ -8,7 +8,16 @@ var utils = require("./src/filterUtils.js");
 var _dimensions = [];
 
 var filter = function(tokens) {
-    _dimensions.push(tokens);
+    if (tokens) {
+        _dimensions.push(tokens);
+    }
+    return this;
+};
+
+var setDimensions = function(dim) {
+    if (dim) {
+        _dimensions = dim;
+    }
     return this;
 };
 
@@ -58,9 +67,12 @@ function platformify(filePath) {
     });
 
     transform.filter = filter.bind(transform);
+    transform.setDimensions = setDimensions.bind(transform);
+
     return transform;
 }
 
 platformify.filter = filter.bind(platformify);
+platformify.setDimensions = setDimensions.bind(platformify);
 
 module.exports = platformify;

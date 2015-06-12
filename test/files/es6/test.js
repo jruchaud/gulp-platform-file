@@ -2,7 +2,8 @@
 
 // This is the test
 
-import a from "./another.js";
+import path from "path";
+import a from "./other.js";
 
 var test = 3 * a;
 

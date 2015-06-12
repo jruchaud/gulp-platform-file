@@ -40,6 +40,10 @@ With:
 
 ```platformify().filter(["prod", "dev"]).filter(["android", "ios"]);```
 
+or
+
+```platformify().setDimensions([["prod", "dev"],["android", "ios"]]);```
+
 You get:
 
 ```gulp --ios --dev``` --> test.js
@@ -84,6 +88,37 @@ gulp.task("default", function() {
     .pipe(gulp.dest("dist"));
 });
 ```
+
+Babel
+=====
+
+You can use gulp-platform-file with Babel or babelify if you're using es6 modules syntax.
+
+```js
+gulp.task("withBabel", ["clean"], function() {
+    return browserify({
+        entries: "test.js"
+    })
+    .transform(babelify.configure({
+        compact: false,
+        extra: {
+            "gulp-platform-file": {
+                dimensions: [
+                    ["test", "dev", "prod"],
+                    ["sony", "android"]
+                ]
+            }
+        },
+        plugins: ["gulp-platform-file/plugin/babelFilterPlugin"]
+    }))
+    .bundle()
+    .pipe(source("bundle.js"))
+    .pipe(gulp.dest("dist"));
+});
+```
+
+The babel plugin will analyze imports decalrations in each file and change them if it founds a more appropriate one
+according to your current building environment and to your dimensions.
 
 API
 ===

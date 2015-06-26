@@ -36,7 +36,7 @@ gulp.task("withBrowserify", ["clean"], function() {
     })
     .transform(platformify
               .filter(["prod", "dev", "test"])
-	      .filter(["android", "ios"]))
+              .filter(["android", "ios"]))
     .bundle()
     .pipe(source(paths.outputFile))
     .pipe(gulp.dest(paths.build));

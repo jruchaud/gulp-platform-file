@@ -37,13 +37,13 @@ function platformify(filePath) {
 
         var specificPath;
 
-        if (!outFiles[key]) {
+        if (!outFiles[key] && fs.statSync(f).isFile()) {
 
-            specificPath = utils.find(dir, baseDir, name, _dimensions, filteringTokens);
+            specificPath = utils.find(dir, baseDir, name, _dimensions, filteringTokens, true);
 
             if (specificPath) {
                 fs.readFile(specificPath, function(err, data) {
-                    if (data) {
+                    if (!err && data) {
                         if (filePath) {
                             outFiles[key] = data;
 

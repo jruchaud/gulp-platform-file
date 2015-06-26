@@ -31,7 +31,6 @@ var findProjectDir = function(currentFile) {
  * trying to replace require to non existing file to a derived file (if one can be found)
  */
 var ImportsFilter = function(babel) {
-    var t = babel.types;
     var projectRootDir;
 
     return new babel.Transformer("babel-platform", {
@@ -41,7 +40,7 @@ var ImportsFilter = function(babel) {
 
             var pluginConf = config.opts.extra["gulp-platform-file"] || {},
                 dimensions = pluginConf.dimensions || [],
-                filteringTokens =  utils.getConf(dimensions);
+                filteringTokens = utils.getConf(dimensions);
 
             projectRootDir = projectRootDir || pluginConf.projectRootDir || findProjectDir(scope.path.state.opts.sourceFileName);
 
@@ -66,7 +65,7 @@ var ImportsFilter = function(babel) {
 
                 var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), projectRootDir, name, dimensions, filteringTokens));
 
-                if (matchingFile != fileBaseName) {
+                if (matchingFile !== fileBaseName) {
 
                     // A specific path has been found ! Let's update the require call
                     node.source.value = relativeImportPath.replace(fileBaseName, matchingFile);

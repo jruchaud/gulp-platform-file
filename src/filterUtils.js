@@ -3,7 +3,8 @@
 var path = require("path");
 var fs = require("fs");
 var _ = require("lodash");
-var util = require('gulp-util');
+var util = require("gulp-util");
+var globule = require("globule");
 
 var getTokens = function(string) {
     return _.compact(string.split(/[.-]/));
@@ -29,13 +30,13 @@ var getFilteredTokens = function(string, dimensions, isFile) {
 
 /**
  * Return the token of a file name that doesn't mathc any dimensional token
- * @param   {String} fileName   base name of the file
+ * @param   {String} string   base name of the file
  * @param   {Array of Array of String dimensions   list of dimensions
  * @returns {Array of String} base name tokens
  */
-var getBaseTokens = function(fileName, dimensions) {
-    var allTokens = getTokens(fileName),
-        filteredTokens = getFilteredTokens(fileName, dimensions, true);
+var getBaseTokens = function(string, dimensions, isFile) {
+    var allTokens = getTokens(string),
+        filteredTokens = getFilteredTokens(string, dimensions, isFile);
 
     return _.difference(allTokens, filteredTokens);
 };
@@ -82,19 +83,20 @@ var computeScore = function(tokens, dimensions) {
  * dimensions = [[android, ios]]
  * fileName = "test-android-backup.js" => false : the two files have the same root but the fileName has an extra token,
  * fileBaseName = "test.js                not corresponding to any dimensions which means the 2 files have nothing in common.
+ *
  * @param   {String} fileName          base name of the file to test
  * @param   {String} fileBaseName      base name of the file used as a reference
  * @param   {Array of Array of String} dimensions   list of the dimensions
  * @returns {Array of String} list of the dimensionals tokens found in the fileName if derived from fileBaseName, false otherwize
  */
-var isDerivedFrom = function(fileName, fileBaseName, dimensions) {
-    var allTokens = getTokens(fileName),
-        filteredTokens = getFilteredTokens(fileName, dimensions, true),
+var isDerivedFrom = function(string, baseString, dimensions, isFile) {
+    var allTokens = getTokens(string),
+        filteredTokens = getFilteredTokens(string, dimensions, isFile),
         diff = _.difference(allTokens, filteredTokens);
 
-    var baseDiff = getBaseTokens(fileBaseName, dimensions);
+    var baseDiff = getBaseTokens(baseString, dimensions, isFile);
 
-    return diff.length == baseDiff.length && filteredTokens || [];
+    return diff.length === baseDiff.length && filteredTokens || [];
 };
 
 /**
@@ -103,7 +105,7 @@ var isDerivedFrom = function(fileName, fileBaseName, dimensions) {
  * @param {Array of array of string}   dimensions tokens defining every dimension
  */
 var getFileNameBaseFrom = function(fileName, dimensions) {
-    var baseTokens = getBaseTokens(fileName, dimensions);
+    var baseTokens = getBaseTokens(fileName, dimensions, true);
 
     return baseTokens.join("-").replace(/-([^-]+)$/, ".$1"); // Replace the last "-" by "."
 };
@@ -117,7 +119,7 @@ var getFileNameBaseFrom = function(fileName, dimensions) {
 var isPerfectMatch = function(tokens, filteringTokens) {
     var rst = _.intersection(tokens, filteringTokens);
 
-    if (rst.length !== tokens.length) { // It's not a perfect match
+    if (rst.length !== tokens.length || !rst.length) { // It's not a perfect match
         rst = null;
     }
 
@@ -125,26 +127,75 @@ var isPerfectMatch = function(tokens, filteringTokens) {
 };
 
 /**
- * Check the given path and determine if it holds some dimensions token in it
- * If it's the case, this function determine if it matches the current filtering tokens or not.
+ * Check the given path is a derived path or not (according to the dimensions that have been defined)
  *
  * Example :
- * the current filterfing tokens are : sony and dev
- * /common/defaultStuff/myFile.txt => true
- * /common/sony-prod/myFiles.txt => false
- * /common/sony-dev/myFiles.txt => true
+ * Let's say the dimensions is a simple array: [sony, ios]
+ * /common/default/myFile.txt => true
+ * /common/sony/myFiles.txt => false
+ * /ios/myFiles.txt => false
  *
- * @returns true if the path is valid according to the current filtering tokens, false otherwize
+ * @returns true if the path is not a derived path (no dimensions tokens can be found in it)
  */
-var isValidPath = function(dir, baseDir, dimensions, filteringTokens) {
-    var rst = true;
+var isPlainPath = function(dir, baseDir, dimensions) {
+    var derivedFolders = path.relative(baseDir, dir)
+        .split("/")
+        .filter(function(folderName) {
+            var t = getFilteredTokens(folderName, dimensions);
+            return t && t.length;
+        });
 
-    var folders = path.relative(baseDir, dir).split("/");
-    for (var folderName of folders) {
-        if (!isPerfectMatch(getFilteredTokens(folderName, dimensions), filteringTokens)) {
-            rst = false;
-            break;
+    return !derivedFolders.length;
+};
+
+var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringTokens) {
+    var relativePath = path.relative(baseDir, dir);
+    var dirTokens = relativePath.split("/");
+
+    for (var i = 0, l = dirTokens.length; i < l; i++) {
+        var t = dirTokens[i];
+        if (t && t !== "..") {
+
+            // let's read each folder level and check if we can find a derivation
+
+            var readPath = path.join.apply(path, [baseDir].concat(dirTokens.slice(0, i))); // first time : path.join(baseDir, dirTokens[0]),
+                                                                                            // then : path.join(baseDir, dirTokens[0], dirTokens[1]),...
+                                                                                            // => go through all the dir hierarchy
+
+            var bestScore = 0,
+                candidates = fs.readdirSync(readPath);
+
+            // for each level, check if there are some matching derived paths and and if so, find the best one
+
+            for (var item of candidates) {
+                var p = path.join(readPath, item);
+                if (fs.statSync(p).isDirectory()) { // process only directories
+
+                    var baseTokens = getBaseTokens(item, dimensions),
+                        filteredTokens = !baseTokens.length && getFilteredTokens(item, dimensions) || isDerivedFrom(item, t, dimensions);
+
+                    var perfectMatchTokens = isPerfectMatch(filteredTokens, filteringTokens);
+                    if (perfectMatchTokens) {
+                        var score = computeScore(perfectMatchTokens, dimensions);
+                        var doesFileExist = globule.find({
+                            srcBase: path.join.apply(path, [p].concat(dirTokens.slice(i + 1, l))),
+                            src: getFileNameBaseFrom(fileBaseName, dimensions)
+                        }).length;
+
+                        if (score > bestScore && doesFileExist) {
+                            bestScore = score;
+                            dirTokens[i] = item;
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    var rst = path.join.apply(path, [baseDir].concat(dirTokens));
+
+    if (path.relative(rst, dir)) {
+        console.log(">>> Substituting dir path from ", relativePath, "to", path.relative(baseDir, rst));
     }
 
     return rst;
@@ -160,28 +211,34 @@ var isValidPath = function(dir, baseDir, dimensions, filteringTokens) {
  * @param   {Array of strings}   tokens on which is processed the filtering
  * @returns {String or null} String if a candidate has been found, null
  */
-var find = function(dir, baseDir, fileBaseName, dimensions, filteringTokens) {
+var find = function(dir, baseDir, fileBaseName, dimensions, filteringTokens, filterDir) {
     var rst;
 
-    // First, let's analyze the dir path and filter out non matching path
+    // First, let's analyze the dir path and filter out derived path :
+    // we only deal with non derived path, figuring out later on if we should replace them with some matching derived path
 
-    if (!isValidPath(dir, baseDir, dimensions, filteringTokens)) {
+    if (isPlainPath(dir, baseDir, dimensions)) {
 
-        console.log(">>> Excluding", dir);
+        // Let's check now if a derived dir path holding a file which has the same root name has the fileBaseName
+        // can match the filtering tokens
 
-    } else {
-        rst = path.join(dir, fileBaseName);
+        var dirPath = dir;
+        if (filterDir) {
+            dirPath = getBestDirPath(dir, baseDir, fileBaseName, dimensions, filteringTokens);
+        }
+
+        rst = path.join(dirPath, fileBaseName);
 
         // Retrieve potential candidates within the dir
 
-        var candidates = fs.readdirSync(dir).filter(function(item) {
+        var candidates = fs.readdirSync(dirPath).filter(function(item) {
             return getFileNameBaseFrom(item, dimensions) === fileBaseName;
         });
 
         var bestScore = 0;
         for (var fileName of candidates) {
 
-            var tokens = isDerivedFrom(fileName, fileBaseName, dimensions);
+            var tokens = isDerivedFrom(fileName, fileBaseName, dimensions, true);
 
             // Check if the intersection is a perfect match and retrieve the matching tokens if so
             var perfectMatchTokens = isPerfectMatch(tokens, filteringTokens);
@@ -189,7 +246,7 @@ var find = function(dir, baseDir, fileBaseName, dimensions, filteringTokens) {
                 var score = computeScore(perfectMatchTokens, dimensions);
                 if (score > bestScore) {
                     bestScore = score;
-                    rst = path.join(dir, fileName);
+                    rst = path.join(dirPath, fileName);
                 }
             }
         }

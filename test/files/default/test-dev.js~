@@ -1,0 +1,6 @@
+"use strict";
+
+// This is the test-dev
+
+require("./another.js");
+require("./common/subfolder/subTask.js");

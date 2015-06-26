@@ -30,29 +30,36 @@ function platformify(filePath) {
 
         var f = filePath || file.path,
             dir = path.dirname(f),
+            baseDir = file.base || dir,
             base = path.basename(f),
             name = utils.getFileNameBaseFrom(base, _dimensions),
             key = path.join(dir, name);
 
+        var specificPath;
+
         if (!outFiles[key]) {
 
-            var specificPath = utils.find(dir, name, _dimensions, filteringTokens);
+            specificPath = utils.find(dir, baseDir, name, _dimensions, filteringTokens);
 
-            fs.readFile(specificPath, function(err, data) {
-                if (data) {
-                    if (filePath) {
-                        outFiles[key] = data;
+            if (specificPath) {
+                fs.readFile(specificPath, function(err, data) {
+                    if (data) {
+                        if (filePath) {
+                            outFiles[key] = data;
 
-                    } else {
-                        file.path = key;
-                        file.contents = data;
-                        outFiles[key] = file;
+                        } else {
+                            file.path = key;
+                            file.contents = data;
+                            outFiles[key] = file;
+                        }
                     }
-                }
 
-                cb();
-            });
-        } else {
+                    cb();
+                });
+            }
+        }
+
+        if (!specificPath) {
             cb();
         }
     },

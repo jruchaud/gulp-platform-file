@@ -64,7 +64,7 @@ var ImportsFilter = function(babel) {
                 var dir = path.dirname(absoluteMatchingPaths[0]),
                     name = utils.getFileNameBaseFrom(fileBaseName, dimensions);
 
-                var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), name, dimensions, filteringTokens));
+                var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), projectRootDir, name, dimensions, filteringTokens));
 
                 if (matchingFile != fileBaseName) {
 

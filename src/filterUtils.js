@@ -130,7 +130,7 @@ var isPerfectMatch = function(tokens, filteringTokens) {
  * Check the given path is a derived path or not (according to the dimensions that have been defined)
  *
  * Example :
- * Let's say the dimensions is a simple array: [sony, ios]
+ * Let's say the dimensions are a simple array: [sony, ios]
  * /common/default/myFile.txt => true
  * /common/sony/myFiles.txt => false
  * /ios/myFiles.txt => false

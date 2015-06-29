@@ -13,13 +13,13 @@ var platformify = require("gulp-platform-file")
 How it works
 ============
 
-For example, your workspace may contain the following files :
+For example, let's imagine that your workspace contains platform specific files :
  * test.js
  * test-ios.js
  * test-android.js
 
-When you build you application, you want to build for a specific platform, let's say either "ios" or "android".
-To do so, you can use gulp-platform-file : define "ios" and "android" as a dimension of your project and use gulp-platform-file as a filter in your Gulp task.
+You're about to build your application but you want to build for a specific platform, let's say in our case either "ios" or "android".
+To do so, you can use gulp-platform-file. Define "ios" and "android" as a dimension of your project and use gulp-platform-file as a filter in your Gulp task :
 
 ```
 gulp.task("default", function() {
@@ -28,20 +28,23 @@ gulp.task("default", function() {
             platformify().filter(["android", "ios"])
         )
         .pipe(gulp.dest("build/"));
+});
 ```
 
-Then call gulp with the platform for which you want to build as a parameter:
+Then call gulp with the platform for which you want to build as a parameter :
 
 ```gulp --ios```
 
 The build directory will contain a file called "test.js" which contains the content of test-ios.js.
 
-It is possible to declare as many dimensions as you desire. In this case the defining order is important, the first dimension has the most important weight.
+You can declare as many dimensions as you desire. But remember that the defining order is important : the first dimension has the most important weight.
 
 For example, if your workspace contains :
  * test.js
  * test-prod.js
  * test-prod-ios.js
+ * test-ios.js
+ * test-android.js
 
 With:
 
@@ -53,13 +56,13 @@ or
 
 You will get:
 
-```gulp --ios --dev``` --> test.js
+```gulp --ios --dev``` --> test-ios.js
 
 ```gulp --ios --prod``` --> test-prod-ios.js
 
 ```gulp --android --prod``` --> test-prod.js
 
-Finally, you can also apply your dimensions token directly on folders. For example, let's imagine your workspace contains the following tree :
+You can even apply your dimensions tokens directly on folders. For example, let's imagine your workspace contains the following tree :
 ```
 stuff
     |__ stuff.txt
@@ -85,8 +88,11 @@ gulp.task("default", function() {
 Then :
 
 ```gulp``` --> will copy stuff.txt and anotherStuf.txt from stuff directory into the build destination.
+
 ```gulp --dev --android``` --> will copy stuff.txt from stuff-dev-android directory and anotherStuff.txt from stuff directory into the build destination.
+
 ```gulp --dev``` --> will copy stuff.txt from stuff directory and anotherStuff.txt from stuff directory into the build destination.
+
 ```gulp --prod``` --> will copy stuff.txt from prod directory and anotherStuff.txt from stuff directory into the build destination.
 
 Gulp

@@ -13,25 +13,32 @@ var platformify = require("gulp-platform-file")
 How it works
 ============
 
-For example, you have :
+For example, your workspace may contain the following files :
  * test.js
  * test-ios.js
  * test-android.js
 
-You want to only keep "ios" or "android" files when you build your application.
-Just configure the filter with your dimension on "ios" and "android" in Gulp task.
+When you build you application, you want to build for a specific platform, let's say either "ios" or "android".
+To do so, you can use gulp-platform-file : define "ios" and "android" as a dimension of your project and use gulp-platform-file as a filter in your Gulp task.
 
-```platformify().filter(["android", "ios"]);```
+```
+gulp.task("default", function() {
+    gulp.src("workspace/**")
+        .pipe(
+            platformify().filter(["android", "ios"])
+        )
+        .pipe(gulp.dest("build/"));
+```
 
-Then call gulp:
+Then call gulp with the platform for which you want to build as a parameter:
 
 ```gulp --ios```
 
-So you get only "test-ios.js".
+The build directory will contain a file called "test.js" which contains the content of test-ios.js.
 
-You can have many dimensions. In this case the defining order is important, the first dimension has the most important weight.
+It is possible to declare as many dimensions as you desire. In this case the defining order is important, the first dimension has the most important weight.
 
-For example, you have :
+For example, if your workspace contains :
  * test.js
  * test-prod.js
  * test-prod-ios.js
@@ -44,13 +51,43 @@ or
 
 ```platformify().setDimensions([["prod", "dev"],["android", "ios"]]);```
 
-You get:
+You will get:
 
 ```gulp --ios --dev``` --> test.js
 
 ```gulp --ios --prod``` --> test-prod-ios.js
 
 ```gulp --android --prod``` --> test-prod.js
+
+Finally, you can also apply your dimensions token directly on folders. For example, let's imagine your workspace contains the following tree :
+```
+stuff
+    |__ stuff.txt
+    |__ otherStuff.txt
+stuff-dev-android
+    |__ stuff.txt
+prod
+    |__ stuff.txt
+```
+You defined the following task :
+```
+gulp.task("default", function() {
+    gulp.src("workspace/**")
+        .pipe(
+            platformify().setDimensions([
+                ["android", "ios"],
+                ["prod", "dev"]
+            ])
+        )
+        .pipe(gulp.dest("build/"));
+```
+
+Then :
+
+```gulp``` --> will copy stuff.txt and anotherStuf.txt from stuff directory into the build destination.
+```gulp --dev --android``` --> will copy stuff.txt from stuff-dev-android directory and anotherStuff.txt from stuff directory into the build destination.
+```gulp --dev``` --> will copy stuff.txt from stuff directory and anotherStuff.txt from stuff directory into the build destination.
+```gulp --prod``` --> will copy stuff.txt from prod directory and anotherStuff.txt from stuff directory into the build destination.
 
 Gulp
 ====

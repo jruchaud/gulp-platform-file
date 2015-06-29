@@ -83,6 +83,7 @@ gulp.task("default", function() {
             ])
         )
         .pipe(gulp.dest("build/"));
+});
 ```
 
 Then :

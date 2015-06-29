@@ -96,7 +96,7 @@ var isDerivedFrom = function(string, baseString, dimensions, isFile) {
 
     var baseDiff = getBaseTokens(baseString, dimensions, isFile);
 
-    return diff.length === baseDiff.length && filteredTokens || [];
+    return _.intersection(diff, baseDiff).length === baseDiff.length && filteredTokens || [];
 };
 
 /**

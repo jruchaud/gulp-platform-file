@@ -18,10 +18,12 @@ var getTokens = function(string) {
 var getFilteredTokens = function(string, dimensions, isFile) {
     var tokens = getTokens(string);
 
+    // Remove the first token which corresponds to the root of the string (the first token can never be a token)
+    tokens.shift();
+
     if (isFile) {
-        // Remove the first token which corresponds to the fileBaseName
-        // and the last token which corresponds to the extension
-        tokens.shift();tokens.pop();
+        // remove the last token which corresponds to the extension
+        tokens.pop();
     }
 
     // remove unknown tokens from the list

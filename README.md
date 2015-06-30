@@ -69,8 +69,6 @@ stuff
     |__ otherStuff.txt
 stuff-dev-android
     |__ stuff.txt
-prod
-    |__ stuff.txt
 ```
 You defined the following task :
 ```
@@ -90,11 +88,10 @@ Then :
 
 ```gulp``` --> will copy stuff.txt and anotherStuf.txt from stuff directory into the build destination.
 
-```gulp --dev --android``` --> will copy stuff.txt from stuff-dev-android directory and anotherStuff.txt from stuff directory into the build destination.
-
 ```gulp --dev``` --> will copy stuff.txt and anotherStuff.txt from stuff directory into the build destination.
 
-```gulp --prod``` --> will copy stuff.txt from prod directory and anotherStuff.txt from stuff directory into the build destination.
+```gulp --dev --android``` --> will copy stuff.txt from stuff-dev-android directory and anotherStuff.txt from stuff directory into the build destination.
+
 
 Gulp
 ====

@@ -96,6 +96,7 @@ build
     |__ stuff
         |__stuff.txt (copied from workspace/stuff)
         |__things.txt (copied from workspace/stuff)
+```
 
 ```gulp --dev```
 ```

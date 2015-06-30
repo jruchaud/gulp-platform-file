@@ -91,6 +91,7 @@ gulp.task("default", function() {
 Then :
 
 ```gulp```
+
 ```
 build
     |__ stuff
@@ -99,6 +100,7 @@ build
 ```
 
 ```gulp --dev```
+
 ```
 build
     |__ stuff
@@ -109,6 +111,7 @@ build
 ```
 
 ```gulp --dev --android```
+
 ```
 build
     |__ stuff
@@ -117,7 +120,6 @@ build
     |__ otherStuff
         |__ otherStuff.txt (copied from workspace/otherStuff-dev)
 ```
-
 
 Gulp
 ====

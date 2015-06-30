@@ -113,6 +113,16 @@ var getFileNameBaseFrom = function(fileName, dimensions) {
 };
 
 /**
+ * Get the real name, without tokens, of a folder name
+ * @param {String} folderName folder to analyze
+ * @param {Array of Array of String} dimensions tokens defining every dimensions
+ */
+var getFolderNameBaseFrom = function(folderName, dimensions) {
+    var baseTokens = getBaseTokens(folderName, dimensions);
+    return baseTokens.join("-");
+};
+
+/**
  * Check if the intersection between tokens and filtering tokens is a perfect match
  * @param   {Array of String} tokens          tokens to analyze with the current filtering tokens
  * @param   {Array of String} filteringTokens tokens use to filter
@@ -182,7 +192,8 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
     var dirTokens = relativePath.split("/");
 
     for (var i = 0, l = dirTokens.length; i < l; i++) {
-        var t = dirTokens[i];
+        var t = getFolderNameBaseFrom(dirTokens[i]);
+        console.log(t, dirTokens[i]);
         if (t && t !== "..") {
 
             // let's read each folder level and check if we can find a derivation

@@ -66,9 +66,13 @@ You can even apply your dimensions tokens directly on folders. For example, let'
 ```
 stuff
     |__ stuff.txt
-    |__ otherStuff.txt
+    |__ things.txt
 stuff-dev-android
     |__ stuff.txt
+otherStuff-dev
+    |__ otherStuff.txt
+otherStuff-prod
+    |__ otherStuff.txt
 ```
 You defined the following task :
 ```
@@ -86,11 +90,32 @@ gulp.task("default", function() {
 
 Then :
 
-```gulp``` --> will copy stuff.txt and anotherStuf.txt from stuff directory into the build destination.
+```gulp```
+```
+build
+    |__ stuff
+        |__stuff.txt (copied from workspace/stuff)
+        |__things.txt (copied from workspace/stuff)
 
-```gulp --dev``` --> will copy stuff.txt and anotherStuff.txt from stuff directory into the build destination.
+```gulp --dev```
+```
+build
+    |__ stuff
+        |__stuff.txt (copied from workspace/stuff)
+        |__things.txt (copied from workspace/stuff)
+    |__ otherStuff
+        |__ otherStuff.txt (copied from workspace/otherStuff-dev)
+```
 
-```gulp --dev --android``` --> will copy stuff.txt from stuff-dev-android directory and anotherStuff.txt from stuff directory into the build destination.
+```gulp --dev --android```
+```
+build
+    |__ stuff
+        |__stuff.txt (copied from workspace/stuff-dev-android)
+        |__things.txt (copied from workspace/stuff)
+    |__ otherStuff
+        |__ otherStuff.txt (copied from workspace/otherStuff-dev)
+```
 
 
 Gulp

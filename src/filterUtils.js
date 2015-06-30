@@ -165,14 +165,10 @@ var isPlainPath = function(dir, baseDir, dimensions) {
  *                 |__ myFile.txt
  *         |__ mySubFolder-dev-android
  *                 |__ myFile.txt
- *    |__prod
- *         |__ mySubFolder
- *                 |__ myFile.txt
  *
  * If you run the following method with :
  *
  * - filteringTokens = [dev, android] => the return path will be /home/user/myUser/myProject/myFolder/mySubfolder-dev-android/myFile.txt
- * - filteringTokens = [prod] => the return path will be /home/user/myUser/myProject/prod/mySubFolder/myFile.txt
  *
  * @param   {String} dir             the directory for which to look for alternatives
  * @param   {String} baseDir         the base directory from which start to look for alternatives
@@ -204,8 +200,7 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
                 var p = path.join(readPath, item);
                 if (fs.statSync(p).isDirectory()) { // process only directories
 
-                    var baseTokens = getBaseTokens(item, dimensions),
-                        filteredTokens = !baseTokens.length && getFilteredTokens(item, dimensions) || isDerivedFrom(item, t, dimensions);
+                    var filteredTokens = isDerivedFrom(item, t, dimensions);
 
                     var perfectMatchTokens = isPerfectMatch(filteredTokens, filteringTokens);
                     if (perfectMatchTokens) {

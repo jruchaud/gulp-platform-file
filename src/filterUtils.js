@@ -148,6 +148,37 @@ var isPlainPath = function(dir, baseDir, dimensions) {
     return !derivedFolders.length;
 };
 
+/**
+ * For a given path, check if a derived path can match and return it if so.
+ *
+ * For example :
+ * - dir = /home/user/myUser/myProject/myFolder/mySubFolder/myFile.txt
+ * - baseDir = /home/user/myUser/myProject
+ * - dimensions = [[dev, prod],[ios, android]]
+ *
+ * your project contains the following tree:
+ * myProject
+ *    |__myFolder
+ *         |__ mySubFolder
+ *                 |__ myFile.txt
+ *         |__ mySubFolder-dev-android
+ *                 |__ myFile.txt
+ *    |__prod
+ *         |__ mySubFolder
+ *                 |__ myFile.txt
+ *
+ * If you run the following method with :
+ *
+ * - filteringTokens = [dev, android] => the return path will be /home/user/myUser/myProject/myFolder/mySubfolder-dev-android/myFile.txt
+ * - filteringTokens = [prod] => the return path will be /home/user/myUser/myProject/prod/mySubFolder/myFile.txt
+ *
+ * @param   {String} dir             the directory for which to look for alternatives
+ * @param   {String} baseDir         the base directory from which start to look for alternatives
+ * @param   {String} fileBaseName    file base name of the path
+ * @param   {Array of Array of String} dimensions      the dimensions of the project
+ * @param   {Array of String} filteringTokens the dimensions token we're currently filtering with
+ * @returns {String} The derived path if one has been found, the given dir otherwize
+ */
 var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringTokens) {
     var relativePath = path.relative(baseDir, dir);
     var dirTokens = relativePath.split("/");

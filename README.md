@@ -90,7 +90,7 @@ gulp.task("default", function() {
 
 Then :
 
-```gulp```
+```gulp ``` will give you :
 
 ```
 build
@@ -99,7 +99,7 @@ build
         |__things.txt (copied from workspace/stuff)
 ```
 
-```gulp --dev```
+```gulp --dev``` will give you :
 
 ```
 build
@@ -110,7 +110,7 @@ build
         |__ otherStuff.txt (copied from workspace/otherStuff-dev)
 ```
 
-```gulp --dev --android```
+```gulp --dev --android``` will give you :
 
 ```
 build

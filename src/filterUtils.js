@@ -119,6 +119,7 @@ var getFileNameBaseFrom = function(fileName, dimensions) {
  */
 var getFolderNameBaseFrom = function(folderName, dimensions) {
     var baseTokens = getBaseTokens(folderName, dimensions);
+
     return baseTokens.join("-");
 };
 
@@ -139,25 +140,23 @@ var isPerfectMatch = function(tokens, filteringTokens) {
 };
 
 /**
- * Check the given path is a derived path or not (according to the dimensions that have been defined)
+ * Take a path dir and return the associated plain path, replacing derived folder with the associated plain string.
  *
  * Example :
  * Let's say the dimensions are a simple array: [sony, ios]
- * /common/default/myFile.txt => true
- * /common/sony/myFiles.txt => false
- * /ios/myFiles.txt => false
+ * /common/default/ => /common/default/
+ * /common/default-sony/ => /common/default/
  *
- * @returns true if the path is not a derived path (no dimensions tokens can be found in it)
+ * @returns the plain path
  */
-var isPlainPath = function(dir, baseDir, dimensions) {
-    var derivedFolders = path.relative(baseDir, dir)
+var getPlainDir = function(dir, baseDir, dimensions) {
+    var plainFolders = path.relative(baseDir, dir)
         .split("/")
-        .filter(function(folderName) {
-            var t = getFilteredTokens(folderName, dimensions);
-            return t && t.length;
+        .map(function(folderName) {
+            return getFolderNameBaseFrom(folderName, dimensions);
         });
 
-    return !derivedFolders.length;
+    return path.join.apply(path, [baseDir].concat(plainFolders));
 };
 
 /**
@@ -192,8 +191,8 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
     var dirTokens = relativePath.split("/");
 
     for (var i = 0, l = dirTokens.length; i < l; i++) {
-        var t = getFolderNameBaseFrom(dirTokens[i]);
-        console.log(t, dirTokens[i]);
+        var t = dirTokens[i];
+
         if (t && t !== "..") {
 
             // let's read each folder level and check if we can find a derivation
@@ -233,7 +232,9 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
 
     var rst = path.join.apply(path, [baseDir].concat(dirTokens));
 
-    if (path.relative(rst, dir)) {
+    if (!fs.existsSync(rst)) {
+        rst = null;
+    } else if (path.relative(rst, dir)) {
         console.log(">>> Substituting dir path from ", relativePath, "to", path.relative(baseDir, rst));
     }
 
@@ -253,18 +254,19 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
 var find = function(dir, baseDir, fileBaseName, dimensions, filteringTokens, filterDir) {
     var rst;
 
-    // First, let's analyze the dir path and filter out derived path :
-    // we only deal with non derived path, figuring out later on if we should replace them with some matching derived path
+    // Look for matching derived path first
 
-    if (isPlainPath(dir, baseDir, dimensions)) {
+    var dirPath = dir;
+    if (filterDir) {
 
-        // Let's check now if a derived dir path holding a file which has the same root name has the fileBaseName
-        // can match the filtering tokens
+        // Let's check if a derived dir path,
+        // holding a file which has the same name base (as fileBaseName)
+        // can match the filtering tokens.
 
-        var dirPath = dir;
-        if (filterDir) {
-            dirPath = getBestDirPath(dir, baseDir, fileBaseName, dimensions, filteringTokens);
-        }
+        dirPath = getBestDirPath(dir, baseDir, fileBaseName, dimensions, filteringTokens);
+    }
+
+    if (dirPath) {
 
         rst = path.join(dirPath, fileBaseName);
 
@@ -310,6 +312,7 @@ module.exports = {
     isFileDerivation: isFileDerivation,
     isDerivedFrom: isDerivedFrom,
     getFileNameBaseFrom: getFileNameBaseFrom,
+    getPlainDir: getPlainDir,
     find: find,
     getConf: getConf
 };

@@ -32,14 +32,14 @@ function platformify(filePath) {
             dir = path.dirname(f),
             baseDir = file.base || dir,
             base = path.basename(f),
-            name = utils.getFileNameBaseFrom(base, _dimensions),
-            key = path.join(dir, name);
+            rootName = utils.getFileNameBaseFrom(base, _dimensions), // return the file basename removing dimensions tokens in it if some can be found
+            rootDir = utils.getPlainDir(dir, baseDir, _dimensions), // return the dir path removing dimensions tokens in it if some can be found
+            key = path.join(rootDir, rootName);
 
         var specificPath;
-
         if (!outFiles[key] && fs.statSync(f).isFile()) {
 
-            specificPath = utils.find(dir, baseDir, name, _dimensions, filteringTokens, true);
+            specificPath = utils.find(rootDir, baseDir, rootName, _dimensions, filteringTokens, true);
 
             if (specificPath) {
                 fs.readFile(specificPath, function(err, data) {

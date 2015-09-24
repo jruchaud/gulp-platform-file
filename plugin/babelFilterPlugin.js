@@ -48,11 +48,12 @@ var ImportsFilter = function(babel) {
             // and check if there really is such a file
 
             var relativeImportPath = node.source.value,
-                fileBaseName = path.basename(relativeImportPath);
+                fileBaseName = path.basename(relativeImportPath),
+                filePathSearchingTokens = path.join("/", path.dirname(relativeImportPath)); // removing .. from relative paths
 
             var absoluteMatchingPaths = globule.find({
                 srcBase: projectRootDir,
-                src: path.join("**", path.dirname(relativeImportPath), fileBaseName.split(".")[0] + "*")
+                src: path.join("**", filePathSearchingTokens, fileBaseName.split(".")[0] + "*")
             });
 
             if (absoluteMatchingPaths.length) {
@@ -62,6 +63,11 @@ var ImportsFilter = function(babel) {
 
                 var dir = path.dirname(absoluteMatchingPaths[0]),
                     name = utils.getFileNameBaseFrom(fileBaseName, dimensions);
+
+                // name is supposed to have an extension, if no extension add the default ".js"
+                if (name.indexOf(".") < 0) { // modules are often imported without precising the js extension
+                    name += ".js";
+                }
 
                 var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), projectRootDir, name, dimensions, filteringTokens));
 

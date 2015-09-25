@@ -1,5 +1,7 @@
 "use strict";
 
+const DEBUG = false;
+
 var path = require("path");
 var fs = require("fs");
 var _ = require("lodash");
@@ -234,7 +236,7 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
 
     if (!fs.existsSync(rst)) {
         rst = null;
-    } else if (path.relative(rst, dir)) {
+    } else if (path.relative(rst, dir) && DEBUG) {
         console.log(">>> Substituting dir path from ", relativePath, "to", path.relative(baseDir, rst));
     }
 
@@ -292,7 +294,7 @@ var find = function(dir, baseDir, fileBaseName, dimensions, filteringTokens, fil
             }
         }
 
-        if (bestScore) {
+        if (bestScore && DEBUG) {
             console.log(">>> Substituting", fileBaseName, "with", path.basename(rst));
         }
     }

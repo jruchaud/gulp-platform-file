@@ -65,7 +65,7 @@ var ImportsFilter = function(babel) {
                     name = utils.getFileNameBaseFrom(fileBaseName, dimensions);
 
                 // name is supposed to have an extension, if no extension add the default ".js"
-                if (name.indexOf(".") < 0) { // modules are often imported without precising the js extension
+                if (!path.extname(name)) { // modules are often imported without precising the js extension
                     name += ".js";
                 }
 

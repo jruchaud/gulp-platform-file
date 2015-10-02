@@ -1,6 +1,6 @@
 {
   "name": "gulp-platform-file",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Gulp task to select file for a plateform",
   "main": "index.js",
   "scripts": {

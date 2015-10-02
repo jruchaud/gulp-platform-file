@@ -42,7 +42,7 @@ var ImportsFilter = function(babel) {
                 dimensions = pluginConf.dimensions || [],
                 filteringTokens = utils.getConf(dimensions);
 
-            projectRootDir = projectRootDir || pluginConf.projectRootDir || findProjectDir(scope.path.state.opts.sourceFileName);
+            projectRootDir = findProjectDir(scope.path.state.opts.sourceFileName); // The project src dir can be differenrt between two files
 
             // Let's retrieve the path from the require call
             // and check if there really is such a file

@@ -1,7 +1,7 @@
 "use strict";
 
 var path = require("path");
-var globule = require("globule");
+var glob = require("glob");
 var utils = require("../src/filterUtils");
 
 /**
@@ -14,7 +14,7 @@ var findProjectDir = function(currentFile) {
     for (var i = tokens.length - 1; i > 0; i--) {
 
         dir = rst.substring(0, rst.lastIndexOf("/" + tokens[i]));
-        paths = globule.find({srcBase: dir, src: "node_modules"});
+        paths = new glob.sync("node_modules", {cwd: dir});
 
         if (paths && paths.length) {
             break;
@@ -51,10 +51,7 @@ var ImportsFilter = function(babel) {
                 fileBaseName = path.basename(relativeImportPath),
                 filePathSearchingTokens = path.join("/", path.dirname(relativeImportPath)); // removing .. from relative paths
 
-            var absoluteMatchingPaths = globule.find({
-                srcBase: projectRootDir,
-                src: path.join("**", filePathSearchingTokens, fileBaseName.split(".")[0] + "*")
-            });
+            var absoluteMatchingPaths = new glob.sync(path.join("**", filePathSearchingTokens, fileBaseName.split(".")[0] + "*"), {cwd: projectRootDir});
 
             if (absoluteMatchingPaths.length) {
 

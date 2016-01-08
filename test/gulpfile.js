@@ -53,7 +53,8 @@ gulp.task("withBabel", ["clean"], function() {
                 dimensions: [
                     ["test", "dev", "prod"],
                     ["sony", "android"]
-                ]
+                ],
+                filterFolder: true
             }
         },
         plugins: ["../plugin/babelFilterPlugin"]

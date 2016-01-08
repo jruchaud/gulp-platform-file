@@ -8,23 +8,50 @@ var utils = require("../src/filterUtils");
  * Find the root of the project on which we're executing this babel plugin
  */
 var findProjectDir = function(currentFile) {
-    var rst = path.dirname(currentFile);
+    var result = path.dirname(currentFile);
 
-    var tokens = rst.split("/"), paths, dir;
+    var tokens = result.split("/"), paths, dir;
     for (var i = tokens.length - 1; i > 0; i--) {
 
-        dir = rst.substring(0, rst.lastIndexOf("/" + tokens[i]));
+        dir = result.substring(0, result.lastIndexOf("/" + tokens[i]));
         paths = new glob.sync("node_modules", {cwd: dir});
 
         if (paths && paths.length) {
             break;
         }
 
-        rst = dir;
+        result = dir;
     }
 
-    return rst;
+    return result;
 };
+
+var getSearchingDirPattern = function(currentFile, relativeImportPath, fileBaseName, projectRootDir, filterFolder) {
+    var result;
+
+    var relativeImportDirName = path.dirname(relativeImportPath),
+        fileBaseNamePattern = fileBaseName.split(".")[0] + "*",
+        filePathSearchingTokens = path.join("/", relativeImportDirName); // removing .. from relative paths
+
+    if (filterFolder) {
+        // If the filterFolder option is enabled
+        result = path.join("**", filePathSearchingTokens, fileBaseNamePattern);
+
+    } else if (relativeImportPath.startsWith(".")) {
+        // If it's a relative import, compute the final directory destination thanks to the current file path
+        // (only keep the relative path from the project root for the search to come)
+        result = path.relative(
+            projectRootDir,
+            path.join(path.dirname(currentFile), relativeImportDirName, fileBaseNamePattern)
+        );
+
+    } else {
+        // If it's not a relative import then we assume it's an import from the project root dir
+        result = path.join(relativeImportDirName, fileBaseNamePattern);
+    }
+
+    return result;
+}
 
 /**
  * This function is filtering the require call in js files
@@ -40,18 +67,23 @@ var ImportsFilter = function(babel) {
 
             var pluginConf = config.opts.extra["gulp-platform-file"] || {},
                 dimensions = pluginConf.dimensions || [],
-                filteringTokens = utils.getConf(dimensions);
+                filterFolder = pluginConf.filterFolder,
+                filteringTokens = utils.getConf(dimensions),
+                currentFile = scope.path.state.opts.sourceFileName;
 
-            projectRootDir = findProjectDir(scope.path.state.opts.sourceFileName); // The project src dir can be differenrt between two files
+            projectRootDir = findProjectDir(currentFile); // The project src dir can be different between two files
 
             // Let's retrieve the path from the require call
             // and check if there really is such a file
 
             var relativeImportPath = node.source.value,
-                fileBaseName = path.basename(relativeImportPath),
-                filePathSearchingTokens = path.join("/", path.dirname(relativeImportPath)); // removing .. from relative paths
+                fileBaseName = path.basename(relativeImportPath);
 
-            var absoluteMatchingPaths = new glob.sync(path.join("**", filePathSearchingTokens, fileBaseName.split(".")[0] + "*"), {cwd: projectRootDir});
+            // Search for all potential matching files whithin the searchingDir
+            var absoluteMatchingPaths = new glob.sync(
+                getSearchingDirPattern(currentFile, relativeImportPath, fileBaseName, projectRootDir, filterFolder),
+                {cwd: projectRootDir}
+            );
 
             if (absoluteMatchingPaths.length) {
 

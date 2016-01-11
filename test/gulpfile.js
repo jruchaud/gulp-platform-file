@@ -54,7 +54,7 @@ gulp.task("withBabel", ["clean"], function() {
                     ["test", "dev", "prod"],
                     ["sony", "android"]
                 ],
-                filterFolder: true
+                fullDirHierarchySupport: false
             }
         },
         plugins: ["../plugin/babelFilterPlugin"]

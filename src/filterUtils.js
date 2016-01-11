@@ -6,7 +6,7 @@ var path = require("path");
 var fs = require("fs");
 var _ = require("lodash");
 var util = require("gulp-util");
-var globule = require("globule");
+var glob = require("glob");
 
 var getTokens = function(string) {
     return _.compact(string.split(/[.-]/));
@@ -214,13 +214,13 @@ var getBestDirPath = function(dir, baseDir, fileBaseName, dimensions, filteringT
 
                     var filteredTokens = isDerivedFrom(item, t, dimensions);
 
-                    var perfectMatchTokens = isPerfectMatch(filteredTokens, filteringTokens);
+                    var perfectMatchTokens = isPerfectMatch(filteredTokens, filteringTokens); // We keep the directory only if the dimensions tokens found in the path are all part of current filtering tokens
                     if (perfectMatchTokens) {
-                        var score = computeScore(perfectMatchTokens, dimensions);
-                        var doesFileExist = globule.find({
-                            srcBase: path.join.apply(path, [p].concat(dirTokens.slice(i + 1, l))),
-                            src: getFileNameBaseFrom(fileBaseName, dimensions)
-                        }).length;
+                        var score = computeScore(perfectMatchTokens, dimensions); // it's a perfect match, we compute the score (some dimensions are heavier than others)
+                        var doesFileExist = new glob.sync( // let's check if the branch we found contains the file at the end
+                            getFileNameBaseFrom(fileBaseName, dimensions),
+                            {cwd: path.join.apply(path, [p].concat(dirTokens.slice(i + 1, l)))}
+                        ).length;
 
                         if (score > bestScore && doesFileExist) {
                             bestScore = score;
@@ -307,6 +307,10 @@ var getConf = function(dimensions) {
     return _.intersection(envOptions, _.flattenDeep(dimensions));
 };
 
+var isRelativePath = function(path) {
+    return path && path.startsWith(".");
+}
+
 module.exports = {
     getTokens: getTokens,
     getFilteredTokens: getFilteredTokens,
@@ -316,5 +320,6 @@ module.exports = {
     getFileNameBaseFrom: getFileNameBaseFrom,
     getPlainDir: getPlainDir,
     find: find,
-    getConf: getConf
+    getConf: getConf,
+    isRelativePath: isRelativePath
 };

@@ -26,28 +26,49 @@ var findProjectDir = function(currentFile) {
     return result;
 };
 
-var getSearchingDirPattern = function(currentFile, relativeImportPath, fileBaseName, projectRootDir, filterFolder) {
-    var result;
+var getSearchingDirPattern = function(currentDir, relativeImportPath, fileBaseName, projectRootDir, fullHierarchySupportEnabled) {
+    var result; // Note : the result has to be relative to the project root dir so that the projectRootDir can be use has a cwd option for the glob search.
 
     var relativeImportDirName = path.dirname(relativeImportPath),
         fileBaseNamePattern = fileBaseName.split(".")[0] + "*",
-        filePathSearchingTokens = path.join("/", relativeImportDirName); // removing .. from relative paths
+        dirNamePattern = path.normalize(relativeImportDirName) // removing .. from relative paths;
 
-    if (filterFolder) {
-        // If the filterFolder option is enabled
-        result = path.join("**", filePathSearchingTokens, fileBaseNamePattern);
+    if (fullHierarchySupportEnabled) {
+        // If the fullHierarchySupport option is enabled
+        result = path.join("**", dirNamePattern, fileBaseNamePattern);
 
-    } else if (relativeImportPath.startsWith(".")) {
+    } else if (utils.isRelativePath(relativeImportPath)) {
         // If it's a relative import, compute the final directory destination thanks to the current file path
         // (only keep the relative path from the project root for the search to come)
         result = path.relative(
             projectRootDir,
-            path.join(path.dirname(currentFile), relativeImportDirName, fileBaseNamePattern)
+            path.join(currentDir, relativeImportDirName, fileBaseNamePattern)
         );
 
     } else {
         // If it's not a relative import then we assume it's an import from the project root dir
+        // FIXME : here we should be looking into the NODE_PATH environmental variable
+        // For now, we will assume that the import is relative to the root of the project
         result = path.join(relativeImportDirName, fileBaseNamePattern);
+    }
+
+    return result;
+}
+
+var getAbsoluteImportPath = function(projectRootDir, absoluteCurrentPath, relativeImportPath) {
+
+    var result;
+    if (utils.isRelativePath(relativeImportPath)) {
+        result = path.join(absoluteCurrentPath, relativeImportPath);
+    } else {
+        // FIXME : here we should be looking into the NODE_PATH environmental variable
+        // For now, we will assume that the import is relative to the root of the project
+        result = path.join(projectRootDir, relativeImportPath);
+    }
+
+    // Adding extension if no extension so that we return a significant absolute path
+    if (!path.extname(result)) {
+        result += ".js";
     }
 
     return result;
@@ -67,21 +88,22 @@ var ImportsFilter = function(babel) {
 
             var pluginConf = config.opts.extra["gulp-platform-file"] || {},
                 dimensions = pluginConf.dimensions || [],
-                filterFolder = pluginConf.filterFolder,
-                filteringTokens = utils.getConf(dimensions),
-                currentFile = scope.path.state.opts.sourceFileName;
+                fullHierarchySupport = pluginConf.fullDirHierarchySupport,
+                filteringTokens = utils.getConf(dimensions);
+
+            var currentFile = scope.path.state.opts.sourceFileName,
+                currentDir = path.dirname(currentFile);
 
             projectRootDir = findProjectDir(currentFile); // The project src dir can be different between two files
 
             // Let's retrieve the path from the require call
-            // and check if there really is such a file
-
             var relativeImportPath = node.source.value,
+                absoluteImportPath = getAbsoluteImportPath(projectRootDir, currentDir, relativeImportPath),
                 fileBaseName = path.basename(relativeImportPath);
 
             // Search for all potential matching files whithin the searchingDir
             var absoluteMatchingPaths = new glob.sync(
-                getSearchingDirPattern(currentFile, relativeImportPath, fileBaseName, projectRootDir, filterFolder),
+                getSearchingDirPattern(currentDir, relativeImportPath, fileBaseName, projectRootDir, fullHierarchySupport),
                 {cwd: projectRootDir}
             );
 
@@ -98,17 +120,24 @@ var ImportsFilter = function(babel) {
                     name += ".js";
                 }
 
-                var matchingFile = path.basename(utils.find(path.join(projectRootDir, dir), projectRootDir, name, dimensions, filteringTokens));
+                // Let's do the magic and find the more appropiate path
+                var matchingPath = utils.find(path.join(projectRootDir, dir), projectRootDir, name, dimensions, filteringTokens, true);
 
-                if (matchingFile !== fileBaseName) {
+                // Let's check if there is a difference between the import path and the more appropriate path we just found
+                if (path.relative(matchingPath, absoluteImportPath)) {
+                    // Yep, a specific path has been found ! Let's update the require call
 
-                    // A specific path has been found ! Let's update the require call
-                    node.source.value = relativeImportPath.replace(fileBaseName, matchingFile);
+                    var newImportPath = path.relative(currentDir, matchingPath);
+                    if (!utils.isRelativePath(newImportPath)) {
+                        newImportPath = "./" + newImportPath; // from the current position, we need to add the ./ operator so that babel/browserify can resolve the dependency
+                    }
+
+                    node.source.value = newImportPath;
 
                 } else {
-
                     // Check that the current import does exist, otherwize display an error
-                    var isCurrentImportExist = absoluteMatchingPaths.filter(function(p) { return p.indexOf(matchingFile) >= 0 }).length;
+                    var matchingBaseName = path.basename(matchingPath);
+                    var isCurrentImportExist = absoluteMatchingPaths.filter(function(p) { return p.indexOf(matchingBaseName) >= 0 }).length;
                     if (!isCurrentImportExist) {
                         console.error(
                             "Bad import found :",

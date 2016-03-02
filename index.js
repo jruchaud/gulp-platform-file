@@ -21,12 +21,17 @@ var setDimensions = function(dim) {
     return this;
 };
 
+var setOverride = function(override) {
+    this._override = !!override;
+    return this;
+};
+
 function platformify(filePath) {
     var outFiles = {};
 
     var transform = through.obj(function(file, encoding, cb) {
 
-        var filteringTokens = utils.getConf(_dimensions);
+        var filteringTokens = ["emulator", "sony"];
 
         var f = filePath || file.path,
             dir = path.dirname(f),
@@ -49,7 +54,12 @@ function platformify(filePath) {
 
                         } else {
                             file.path = key;
-                            file.contents = data;
+
+                            if (transform._override && path.basename(specificPath) !== path.basename(file.path)) {
+                                file.contents = Buffer.concat([file.contents, data]);
+                            } else {
+                                file.contents = data;
+                            }
                             outFiles[key] = file;
                         }
                     }
@@ -75,11 +85,13 @@ function platformify(filePath) {
 
     transform.filter = filter.bind(transform);
     transform.setDimensions = setDimensions.bind(transform);
+    transform.setOverride = setOverride.bind(transform);
 
     return transform;
 }
 
 platformify.filter = filter.bind(platformify);
 platformify.setDimensions = setDimensions.bind(platformify);
+platformify.setOverride = setOverride.bind(platformify);
 
 module.exports = platformify;

@@ -21,8 +21,8 @@ var setDimensions = function(dim) {
     return this;
 };
 
-var setOverride = function(override) {
-    this._override = !!override;
+var enableAppendStrategy = function(append) {
+    this._append = !!append;
     return this;
 };
 
@@ -31,7 +31,7 @@ function platformify(filePath) {
 
     var transform = through.obj(function(file, encoding, cb) {
 
-        var filteringTokens = ["emulator", "sony"];
+        var filteringTokens = utils.getConf(_dimensions);
 
         var f = filePath || file.path,
             dir = path.dirname(f),
@@ -55,7 +55,7 @@ function platformify(filePath) {
                         } else {
                             file.path = key;
 
-                            if (transform._override && path.basename(specificPath) !== path.basename(file.path)) {
+                            if (transform._append && path.basename(specificPath) !== path.basename(file.path)) {
                                 file.contents = Buffer.concat([file.contents, data]);
                             } else {
                                 file.contents = data;
@@ -85,13 +85,13 @@ function platformify(filePath) {
 
     transform.filter = filter.bind(transform);
     transform.setDimensions = setDimensions.bind(transform);
-    transform.setOverride = setOverride.bind(transform);
+    transform.enableAppendStrategy = enableAppendStrategy.bind(transform);
 
     return transform;
 }
 
 platformify.filter = filter.bind(platformify);
 platformify.setDimensions = setDimensions.bind(platformify);
-platformify.setOverride = setOverride.bind(platformify);
+platformify.enableAppendStrategy = enableAppendStrategy.bind(platformify);
 
 module.exports = platformify;

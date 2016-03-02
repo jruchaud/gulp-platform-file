@@ -198,7 +198,23 @@ Create the filter for Gulp or Browserify.
 
 ### `platformify().filter(dimension)` ###
 
-Add a dimension.
+Add a supported dimension.
+
+### `platformify().setDimensions(dimensions)` ###
+
+Set all the supported dimensions.
+
+### `platformify().enableAppendStrategy(true|false)` ###
+
+Indicate to the plugin the strategy to use when encountering a more specific file : replace or concatenate.
+The default strategy (append = false) is to replace the content of files with the more specific ones.
+However, you can choose another way to go by enabling this option : if enabled, the default file and the more specific one will be both loaded.
+
+For instance, Imagine you have those 2 files :
+- myStyle.css
+- myStyle-dev.css
+
+If build your project for the dev environment and you enabled the previous option then myStyle.css will be concatenated with myStyle-dev.css. This can allow you to override a few style for your dev environment for instance.
 
 License
 =======

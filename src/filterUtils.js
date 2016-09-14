@@ -9,7 +9,14 @@ var util = require("gulp-util");
 var glob = require("glob");
 
 var getTokens = function(string) {
-    return _.compact(string.split(/[.-]/));
+    // Split the file name into an array by '-' characters and append the file extension
+    // This allows file names with '.' in the name
+    var parse = path.parse(string);
+    var ext = parse.ext.split(".")[1];
+    var name = parse.name.split("-");
+    name.push(ext);
+
+    return _.compact(name);
 };
 
 /**

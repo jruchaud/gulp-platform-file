@@ -11,12 +11,19 @@ var glob = require("glob");
 var getTokens = function(string) {
     // Split the file name into an array by '-' characters and append the file extension
     // This allows file names with '.' in the name
-    var parse = path.parse(string);
-    var ext = parse.ext.split(".")[1];
-    var name = parse.name.split("-");
-    name.push(ext);
+    let extIndex = string.lastIndexOf(".");
 
-    return _.compact(name);
+    var rest = string;
+    var last = "";
+    if (extIndex !== -1) {
+        rest = string.substring(0, extIndex);
+        last = string.substring(extIndex + 1);
+    }
+
+    var tokens = rest.split("-");
+    tokens.push(last);
+
+    return _.compact(tokens);
 };
 
 /**

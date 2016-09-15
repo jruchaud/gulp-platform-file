@@ -37,7 +37,7 @@ var getFilteredTokens = function(string, dimensions, isFile) {
     // Remove the first token which corresponds to the root of the string (the first token can never be a token)
     tokens.shift();
 
-    if (isFile) {
+    if (isFile && path.extname(string).length > 1) {
         // remove the last token which corresponds to the extension
         tokens.pop();
     }
@@ -47,7 +47,7 @@ var getFilteredTokens = function(string, dimensions, isFile) {
 };
 
 /**
- * Return the token of a file name that doesn't mathc any dimensional token
+ * Return the token of a file name that doesn't match any dimensional token
  * @param   {String} string   base name of the file
  * @param   {Array of Array of String dimensions   list of dimensions
  * @returns {Array of String} base name tokens
